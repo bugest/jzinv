@@ -239,7 +239,7 @@ public class ReceiveSaveBeforeRule {
 		}
 		if (receiveVOList == null || receiveVOList.isEmpty()) {
 			if (ntotalinvoicetax.sub(ntaxmny).compareTo(UFDouble.ZERO_DBL) < 0) {
-				throw new BusinessException("税额总额大于票面总税金!");
+				throw new BusinessException("税额总额大于票面总税额!");
 			}
 		} else {
 			UFDouble sumTax = UFDouble.ZERO_DBL;
@@ -257,7 +257,7 @@ public class ReceiveSaveBeforeRule {
 				UFDouble savedNtotalinvoiceamountmny = receiveVO.getNtotalinvoiceamountmny() == null ? UFDouble.ZERO_DBL : receiveVO.getNtotalinvoiceamountmny();
 				UFDouble savedNtotalinvoiceamounttaxmny = receiveVO.getNtotalinvoiceamounttaxmny() == null ? UFDouble.ZERO_DBL : receiveVO.getNtotalinvoiceamounttaxmny();
 				if (!savedNtotalinvoicetax.equals(ntotalinvoicetax)) {
-					throw new BusinessException("票面总税金和本发票拆分的其他单据中的数据不同!");
+					throw new BusinessException("票面总税额和本发票拆分的其他单据中的数据不同!");
 				}
 				if (!savedNtotalinvoiceamountmny.equals(ntotalinvoiceamountmny)) {
 					throw new BusinessException("票面总金额(无税)和本发票拆分的其他单据中的数据不同!");
@@ -268,7 +268,7 @@ public class ReceiveSaveBeforeRule {
 			}
 			if (ntotalinvoicetax.sub(sumTax).sub(ntaxmny)
 					.compareTo(UFDouble.ZERO_DBL) < 0) {
-				throw new BusinessException("税额总额大于票面总税金!");
+				throw new BusinessException("税额总额大于票面总税额!");
 			}
 		}
 
