@@ -31,7 +31,12 @@ public class VinvnoEditHandler extends InvCardEditHandler{
 				getClientUI().getBillCardPanel().getHeadItem(ReceiveVO.BISSPLIT).setEdit(false);
 			} else {
 				getClientUI().getBillCardPanel().getHeadItem(ReceiveVO.BISSPLIT).setEdit(true);
-			}			
+			}	
+			//如果编号不足就给补全 linan 20171027 此逻辑在保存中已经存在，因为涉及验证的问题，不保存时就应该显示正确的结果
+			if (vinvno != null && !vinvno.trim().equals("")) {
+				vinvno = String.format("%08d",Long.valueOf(vinvno));
+				getClientUI().getBillCardPanel().setHeadItem(ReceiveVO.VINVNO, vinvno);
+			}
 		}
 	}
 	
