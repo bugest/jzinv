@@ -34,6 +34,8 @@ public class NtaxmnyEditHandler extends InvCardEditHandler{
 			String[] taxmnyFields = new String[]{ReceiveVO.NINVTAXMNY};
 			String[] mnyFields = new String[]{ReceiveVO.NINVMNY};
 			InvMnyTool.computeMnyByTaxmny(ReceiveVO.NTAXMNY, taxmnyFields, mnyFields, cardPanel, e);
+			// linan add 设置剩余拆分税金
+			ReceiveEditTool.setNsurplussplittax(getClientUI());
     	}
 	}
 

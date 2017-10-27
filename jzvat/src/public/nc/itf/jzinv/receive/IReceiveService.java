@@ -46,5 +46,7 @@ public interface IReceiveService {
 	 * @throws BusinessException
 	 */
 	SuperVO[] queryManageBbyPKManage(Class class1,String pk_obl_manage)throws BusinessException;
-
+	
+	//linan add 根据条件查询拆分合同的信息
+	public List<ReceiveVO> querySplitHeadVOsByCond(String vinvcode, String vinvno, String pk_receive) throws BusinessException;
 }

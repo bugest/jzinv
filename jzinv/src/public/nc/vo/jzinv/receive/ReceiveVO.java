@@ -365,6 +365,74 @@ public class ReceiveVO extends SuperVO  implements IBillCode{
 	
 	public static final String PK_IMAGE="pk_image";
 	
+	//linan 20171023 增加字段 begin
+	//增加字段是否拆分字段 
+	private UFBoolean bissplit;
+	
+	public static final String BISSPLIT = "bissplit";
+	
+	public UFBoolean getBissplit() {
+		return bissplit;
+	}
+	public void setBissplit(UFBoolean bissplit) {
+		this.bissplit = bissplit;
+	}
+	//增加票面总金额 无税
+	private UFDouble ntotalinvoiceamountmny;
+	
+	public static final String NTOTALINVOICEAMOUNTMNY = "ntotalinvoiceamountmny";
+
+	public UFDouble getNtotalinvoiceamountmny() {
+		return ntotalinvoiceamountmny;
+	}
+	public void setNtotalinvoiceamountmny(UFDouble ntotalinvoiceamountmny) {
+		this.ntotalinvoiceamountmny = ntotalinvoiceamountmny;
+	}
+	//增加票面总金额 含税
+	private UFDouble ntotalinvoiceamounttaxmny;
+	
+	public UFDouble getNtotalinvoiceamounttaxmny() {
+		return ntotalinvoiceamounttaxmny;
+	}
+	public void setNtotalinvoiceamounttaxmny(UFDouble ntotalinvoiceamounttaxmny) {
+		this.ntotalinvoiceamounttaxmny = ntotalinvoiceamounttaxmny;
+	}
+	public static final String NTOTALINVOICEAMOUNTTAXMNY = "ntotalinvoiceamounttaxmny";
+	
+	//增加发票总税金
+	private UFDouble ntotalinvoicetax; 
+	
+	public UFDouble getNtotalinvoicetax() {
+		return ntotalinvoicetax;
+	}
+	public void setNtotalinvoicetax(UFDouble ntotalinvoicetax) {
+		this.ntotalinvoicetax = ntotalinvoicetax;
+	}
+	public static final String NTOTALINVOICETAX = "ntotalinvoicetax";
+	
+	//累计已拆分税金
+	private UFDouble ncumulativesplittax; 
+	public UFDouble getNcumulativesplittax() {
+		return ncumulativesplittax;
+	}
+	public void setNcumulativesplittax(UFDouble ncumulativesplittax) {
+		this.ncumulativesplittax = ncumulativesplittax;
+	}
+	public static final String NCUMULATIVESPLITTAX = "ncumulativesplittax";
+	
+	//剩余拆分税金金额
+	private UFDouble nsurplussplittax;
+	
+	public static final String NSURPLUSSPLITTAX = "nsurplussplittax";
+	
+	public UFDouble getNsurplussplittax() {
+		return nsurplussplittax;
+	}
+	public void setNsurplussplittax(UFDouble nsurplussplittax) {
+		this.nsurplussplittax = nsurplussplittax;
+	}
+	//linan 20171023 增加字段 end
+	
 	/**
 	 * 传会计平台
 	 */

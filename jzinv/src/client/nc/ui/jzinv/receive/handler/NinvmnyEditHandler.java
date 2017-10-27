@@ -47,6 +47,8 @@ public class NinvmnyEditHandler extends InvCardEditHandler{
 				setNewLineMny(e);			
 			}
 			//setBodyMnyValue(e);
+			// linan add 设置剩余拆分税金
+			ReceiveEditTool.setNsurplussplittax(getClientUI());
 		}
 	}
 

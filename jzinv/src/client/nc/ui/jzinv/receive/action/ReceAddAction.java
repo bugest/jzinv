@@ -4,7 +4,6 @@ import nc.bs.framework.common.NCLocator;
 import nc.itf.jzinv.invpub.IJzinvQuery;
 import nc.ui.jzinv.pub.action.InvoiceAction;
 import nc.ui.trade.manage.BillManageUI;
-import nc.vo.jzinv.pub.IJzinvBillType;
 import nc.vo.jzinv.receive.ReceiveVO;
 import nc.vo.jzinv.vat0505.VatTaxorgsetVO;
 /**
@@ -30,6 +29,17 @@ public class ReceAddAction extends InvoiceAction{
 		//有些客户发票认证公司录入当前登录公司或置空，需求林云确定新增时该字段置空，不录入默认值
 //		setAuthenOrg();
 		setRedRelateField();
+		//新增时颜色控制 linan
+		getClientUI().getBillCardPanel().getHeadItem(ReceiveVO.NTOTALINVOICEAMOUNTMNY).setNull(false);
+		getClientUI().getBillCardPanel().getHeadItem(ReceiveVO.NTOTALINVOICEAMOUNTTAXMNY).setNull(false);
+		getClientUI().getBillCardPanel().getHeadItem(ReceiveVO.NTOTALINVOICETAX).setNull(false);
+		//新增时不能编辑
+		getClientUI().getBillCardPanel().getHeadItem(ReceiveVO.NTOTALINVOICEAMOUNTMNY).setEdit(false);
+		getClientUI().getBillCardPanel().getHeadItem(ReceiveVO.NTOTALINVOICEAMOUNTTAXMNY).setEdit(false);
+		getClientUI().getBillCardPanel().getHeadItem(ReceiveVO.NTOTALINVOICETAX).setEdit(false);
+		getClientUI().getBillCardPanel().getHeadItem(ReceiveVO.BISSPLIT).setEdit(false);
+		//新增时设置值为空
+		getClientUI().getBillCardPanel().getHeadItem(ReceiveVO.BISSPLIT).setValue(false);
 	}
 	private void setRedRelateField(){
 		getClientUI().getBillCardPanel().getHeadItem(ReceiveVO.PK_RECEIVE_REF).setEdit(false);

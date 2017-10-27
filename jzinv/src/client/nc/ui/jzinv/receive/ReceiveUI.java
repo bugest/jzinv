@@ -21,6 +21,7 @@ import nc.ui.jzinv.pub.buttonstate.RefAddCollBtnVO;
 import nc.ui.jzinv.pub.tool.DeptPsnRela;
 import nc.ui.jzinv.pub.ui.MultiChildBillManageUI;
 import nc.ui.jzinv.receive.handler.BisredEditHandler;
+import nc.ui.jzinv.receive.handler.BissplitEditHandler;
 import nc.ui.jzinv.receive.handler.BlueInvoiceEditHandler;
 import nc.ui.jzinv.receive.handler.ContractEditHandler;
 import nc.ui.jzinv.receive.handler.NinvmnyEditHandler;
@@ -29,8 +30,11 @@ import nc.ui.jzinv.receive.handler.NpriceEditHandler;
 import nc.ui.jzinv.receive.handler.NtaxmnyEditHandler;
 import nc.ui.jzinv.receive.handler.NtaxrateEditHandler;
 import nc.ui.jzinv.receive.handler.NthrecemnyEditHandler;
+import nc.ui.jzinv.receive.handler.NtotalinvoicetaxAfterEdit;
 import nc.ui.jzinv.receive.handler.OpenDateEditHandler;
 import nc.ui.jzinv.receive.handler.ProjectEditHandler;
+import nc.ui.jzinv.receive.handler.VinvcodeEditHandler;
+import nc.ui.jzinv.receive.handler.VinvnoEditHandler;
 import nc.ui.jzinv.spider.button.ImageShowButton;
 import nc.ui.pub.ButtonObject;
 import nc.ui.pub.bill.BillCardBeforeEditListener;
@@ -59,7 +63,6 @@ import nc.vo.pub.AggregatedValueObject;
 import nc.vo.pub.BusinessException;
 import nc.vo.pub.CircularlyAccessibleValueObject;
 import nc.vo.pub.SuperVO;
-import nc.vo.pub.bill.BillTabVO;
 import nc.vo.pub.lang.UFBoolean;
 import nc.vo.pub.lang.UFDouble;
 import nc.vo.trade.button.ButtonVO;
@@ -285,7 +288,22 @@ public class ReceiveUI extends MultiChildBillManageUI implements ChangeListener,
 			new BlueInvoiceEditHandler(this).cardHeadAfterEdit(e);
 		} else if (ReceiveVO.PK_PROJECT.equals(e.getKey())) {
 			new ProjectEditHandler(this).cardHeadAfterEdit(e);
-		} else if (ReceiveVO.PK_SUPPLIER.equals(e.getKey())) {
+		}
+		//linan 增加代码 控制选中是否拆分后的逻辑
+		else if (ReceiveVO.BISSPLIT.equals(e.getKey())) {
+			new BissplitEditHandler(this).cardHeadAfterEdit(e);
+		}
+		else if (ReceiveVO.VINVCODE.equals(e.getKey())) {
+			new VinvcodeEditHandler(this).cardHeadAfterEdit(e);
+		}
+		else if (ReceiveVO.VINVNO.equals(e.getKey())) {
+			new VinvnoEditHandler(this).cardHeadAfterEdit(e);
+		}
+		//票面总税金
+		else if (ReceiveVO.NTOTALINVOICETAX.equals(e.getKey())) {
+			new NtotalinvoicetaxAfterEdit(this).cardHeadAfterEdit(e);
+		}
+		else if (ReceiveVO.PK_SUPPLIER.equals(e.getKey())) {
 //			new SupplierEditHandler(this).cardHeadAfterEdit(e);
 //			String pk_supplierbase = (String) getBillCardPanel().getHeadItem(ReceiveVO.PK_SUPPLIERBASE)
 //					.getValueObject();
@@ -738,7 +756,11 @@ public class ReceiveUI extends MultiChildBillManageUI implements ChangeListener,
 				ReceiveVO.NBACKTAXMNY, ReceiveVO.NHADREDMNY, ReceiveVO.NHADREDTAXMNY, ReceiveVO.NHADSETLEVEFYMNY,
 				ReceiveVO.NHADSETLEVEFYTAXMNY, ReceiveVO.NHADPAYVEFYMNY, ReceiveVO.NHADPAYVEFYTAXMNY,
 				ReceiveVO.NNOSETLEVEFYMNY, ReceiveVO.NNOSETLEVEFYTAXMNY, ReceiveVO.NNOPAYVEFYTAXMNY,
-				ReceiveVO.NFHADDDUCTMNY, ReceiveVO.NFHADDDUCTTAXMNY };
+				ReceiveVO.NFHADDDUCTMNY, ReceiveVO.NFHADDDUCTTAXMNY ,
+				//linan add
+				ReceiveVO.NTOTALINVOICEAMOUNTMNY,ReceiveVO.NTOTALINVOICEAMOUNTTAXMNY,
+				ReceiveVO.NTOTALINVOICETAX,ReceiveVO.NCUMULATIVESPLITTAX,ReceiveVO.NSURPLUSSPLITTAX		
+		};
 	}
 
 	@Override

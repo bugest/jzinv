@@ -6,6 +6,9 @@ import java.util.Map;
 
 import nc.bs.dao.BaseDAO;
 import nc.bs.dao.DAOException;
+import nc.bs.framework.common.NCLocator;
+import nc.bs.logging.Logger;
+import nc.itf.jzinv.receive.IReceiveService;
 import nc.jdbc.framework.processor.BeanListProcessor;
 import nc.jdbc.framework.processor.ColumnListProcessor;
 import nc.vo.jzinv.invpub.InvCheckVO;
@@ -18,7 +21,9 @@ import nc.vo.pub.AggregatedValueObject;
 import nc.vo.pub.BusinessException;
 import nc.vo.pub.SuperVO;
 import nc.vo.pub.VOStatus;
+import nc.vo.pub.lang.UFBoolean;
 import nc.vo.pub.lang.UFDateTime;
+import nc.vo.pub.lang.UFDouble;
 
 import org.apache.commons.lang.StringUtils;
 /**
@@ -34,7 +39,15 @@ public class ReceiveSaveBeforeRule {
 	 * @throws BusinessException
 	 */
 	public void process(AggregatedValueObject vos) throws BusinessException {		
-		checkInvNoUnique(vos);
+		// linan 当税金拆分是不进行判断
+		UFBoolean bissplit = ((ReceiveVO) vos.getParentVO()).getBissplit();
+		if (UFBoolean.TRUE.equals(bissplit)) {
+			// 走拆分金额验证 。判断 总税金金额-本次拆分-累计是不是 >= 0
+			checkSplitTaxOK(vos);
+		} else {
+			checkInvNoUnique(vos);
+		}
+		//checkInvNoUnique(vos);
 		checkBlueBeforeSave(vos);
 		checkRedRece(vos);
 		checkBillBodyBisRefer(vos);
@@ -190,5 +203,74 @@ public class ReceiveSaveBeforeRule {
 		} catch (DAOException e) {
 			throw new BusinessException(e);
 		}	
+	}
+	/**
+	 * @Title: checkSplitTaxOK
+	 * @Description: 判断拆分税金是否ok
+	 * @param @param vos
+	 * @return void
+	 * @throws
+	 */
+	private void checkSplitTaxOK(AggregatedValueObject vos)
+			throws BusinessException {
+		String vinvcode = ((ReceiveVO) vos.getParentVO()).getVinvcode();
+		String vinvno = ((ReceiveVO) vos.getParentVO()).getVinvno();
+		String pk_receive = ((ReceiveVO) vos.getParentVO()).getPk_receive();
+		// UFDouble
+		UFDouble ntotalinvoicetax = ((ReceiveVO) vos.getParentVO())
+				.getNtotalinvoicetax() == null ? UFDouble.ZERO_DBL
+				: ((ReceiveVO) vos.getParentVO()).getNtotalinvoicetax();
+		UFDouble ntotalinvoiceamountmny = ((ReceiveVO) vos.getParentVO())
+				.getNtotalinvoiceamountmny() == null ? UFDouble.ZERO_DBL
+				: ((ReceiveVO) vos.getParentVO()).getNtotalinvoiceamountmny();
+		UFDouble ntotalinvoiceamounttaxmny = ((ReceiveVO) vos.getParentVO())
+				.getNtotalinvoiceamounttaxmny() == null ? UFDouble.ZERO_DBL
+				: ((ReceiveVO) vos.getParentVO()).getNtotalinvoiceamounttaxmny();
+		UFDouble ntaxmny = ((ReceiveVO) vos.getParentVO()).getNtaxmny() == null ? UFDouble.ZERO_DBL
+				: ((ReceiveVO) vos.getParentVO()).getNtaxmny();
+		List<ReceiveVO> receiveVOList = null;
+		try {
+			receiveVOList = NCLocator.getInstance()
+					.lookup(IReceiveService.class)
+					.querySplitHeadVOsByCond(vinvcode, vinvno, pk_receive);
+		} catch (BusinessException e) {
+			Logger.error("查询发票拆分情况报错！", e);
+			throw new BusinessException("查询发票拆分情况报错!");
+		}
+		if (receiveVOList == null || receiveVOList.isEmpty()) {
+			if (ntotalinvoicetax.sub(ntaxmny).compareTo(UFDouble.ZERO_DBL) < 0) {
+				throw new BusinessException("税额总额大于票面总税金!");
+			}
+		} else {
+			UFDouble sumTax = UFDouble.ZERO_DBL;
+			for (ReceiveVO receiveVO : receiveVOList) {
+				//判断之前的是不是都勾选了，如果有没勾选的就报错
+				if (!UFBoolean.TRUE.equals(receiveVO.getBissplit())) {
+					throw new BusinessException("本发票的其他单据没有选中拆分!");
+				}
+				sumTax = sumTax
+						.add(receiveVO.getNtaxmny() == null ? UFDouble.ZERO_DBL
+								: receiveVO.getNtaxmny());
+				//判断当前的票面金额数据是否与其他的拆分数据相同，这种判断主要用于新建时，并发操作：
+				//a新增 b新增 a保存 b不能保存,与以保存的数据进行比较
+				UFDouble savedNtotalinvoicetax = receiveVO.getNtotalinvoicetax() == null ? UFDouble.ZERO_DBL : receiveVO.getNtotalinvoicetax();
+				UFDouble savedNtotalinvoiceamountmny = receiveVO.getNtotalinvoiceamountmny() == null ? UFDouble.ZERO_DBL : receiveVO.getNtotalinvoiceamountmny();
+				UFDouble savedNtotalinvoiceamounttaxmny = receiveVO.getNtotalinvoiceamounttaxmny() == null ? UFDouble.ZERO_DBL : receiveVO.getNtotalinvoiceamounttaxmny();
+				if (!savedNtotalinvoicetax.equals(ntotalinvoicetax)) {
+					throw new BusinessException("票面总税金和本发票拆分的其他单据中的数据不同!");
+				}
+				if (!savedNtotalinvoiceamountmny.equals(ntotalinvoiceamountmny)) {
+					throw new BusinessException("票面总金额(无税)和本发票拆分的其他单据中的数据不同!");
+				}
+				if (!savedNtotalinvoiceamounttaxmny.equals(ntotalinvoiceamounttaxmny)) {
+					throw new BusinessException("票面总金额和本发票拆分的其他单据中的数据不同!");
+				}
+			}
+			if (ntotalinvoicetax.sub(sumTax).sub(ntaxmny)
+					.compareTo(UFDouble.ZERO_DBL) < 0) {
+				throw new BusinessException("税额总额大于票面总税金!");
+			}
+		}
+
 	}
 }

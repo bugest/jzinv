@@ -678,4 +678,40 @@ public class ReceiveServiceImpl implements IReceiveService {
 				" isnull(dr,0)=0 and pk_obl_manage = '" + pk_obl_manage + "'");
 		return returnVO;
 	}
+	/* (non-Javadoc)
+	 * @see nc.itf.jzinv.receive.IReceiveService#querySplitHeadVOsByCond(java.lang.String, java.lang.String, java.lang.String)
+	 */
+	public List<ReceiveVO> querySplitHeadVOsByCond(String vinvcode,
+			String vinvno, String pk_receive) throws BusinessException {
+		StringBuffer sqlStr = new StringBuffer();
+		sqlStr.append(" select * from jzinv_receive r ");
+		sqlStr.append(" where VINVCODE = '" + vinvcode + "'");
+		sqlStr.append(" and VINVNO = '" + vinvno + "'");
+		if(pk_receive == null || "".equals(pk_receive.trim())) {
+			sqlStr.append(" and PK_RECEIVE is not null ");
+		} else {
+			sqlStr.append(" and PK_RECEIVE <> '" + pk_receive + "'");
+		}	
+		sqlStr.append(" and dr = 0 ");
+		List<ReceiveVO> result = (List<ReceiveVO>) new BaseDAO().executeQuery(sqlStr.toString(),
+				new BeanListProcessor(ReceiveVO.class));
+		ReceiveVO[] vos = result.toArray(new ReceiveVO[0]);//(ReceiveVO[])getService().queryByCondition(ReceiveVO.class, whereSql.toString());
+		List<ReceiveVO> voList = new ArrayList<ReceiveVO>();
+		voList.addAll(Arrays.asList(vos));
+/*		Collections.sort(voList, new Comparator<ReceiveVO>() {
+			public int compare(ReceiveVO o1, ReceiveVO o2) {
+				//add by songlx Þð³ýNullPoint
+				if (o1.getDenddate() != null && o2.getDenddate() != null) {
+
+					if (o1.getDenddate().before(o2.getDenddate())) {
+						return -1;
+					} else if (o1.getDenddate().equals(o2.getDenddate())) {
+						return SafeCompute.compare(o1.getNtaxmny(), o2.getNtaxmny());
+					}
+				}
+				return 1;
+			}
+		});*/
+		return voList;
+	}
 }

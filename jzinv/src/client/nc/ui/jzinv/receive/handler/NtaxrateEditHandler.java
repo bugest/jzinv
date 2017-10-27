@@ -1,5 +1,6 @@
 package nc.ui.jzinv.receive.handler;
 
+import nc.bs.logging.Logger;
 import nc.itf.jzinv.pub.taxrate.util.JZTaxRateUtil;
 import nc.ui.jzinv.pub.handler.InvCardEditHandler;
 import nc.ui.jzinv.pub.tool.InvMnyTool;
@@ -31,7 +32,13 @@ public class NtaxrateEditHandler extends InvCardEditHandler{
 	@Override
 	public void cardHeadAfterEdit(BillEditEvent e) {
 		if(ReceiveVO.NTAXRATE.equals(e.getKey())){
-			doBodyWhenEditHeadRate(e);
+			try {
+				doBodyWhenEditHeadRate(e);
+			} catch (Exception ex) {
+				Logger.error("税率编辑后事件报错！", ex);
+			} 
+			// linan add 设置剩余拆分税金
+			ReceiveEditTool.setNsurplussplittax(getClientUI());
 		}
 
 	}
