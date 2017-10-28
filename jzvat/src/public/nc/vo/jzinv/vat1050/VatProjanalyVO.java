@@ -98,6 +98,134 @@ public class VatProjanalyVO extends SuperVO implements IBillCode {
 	private String pk_receunit_base;
 	private String vdef22;
 	private UFDouble nthhadauthtaxmny;
+	//linan 20171028 增加字段 begin
+	//合同结算金额
+	private UFDouble ncontractsettlemny;
+	
+	public UFDouble getNcontractsettlemny() {
+		return ncontractsettlemny;
+	}
+
+	public void setNcontractsettlemny(UFDouble ncontractsettlemny) {
+		this.ncontractsettlemny = ncontractsettlemny;
+	}
+
+	public static final String NCONTRACTSETTLEMNY = "ncontractsettlemny";
+	
+	//合同约定付款比例
+	private UFDouble contractualpaymentratio;
+	
+	public static final String CONTRACTUALPAYMENTRATIO = "contractualpaymentratio";
+	
+	public UFDouble getContractualpaymentratio() {
+		return contractualpaymentratio;
+	}
+
+	public void setContractualpaymentratio(UFDouble contractualpaymentratio) {
+		this.contractualpaymentratio = contractualpaymentratio;
+	}
+	
+	//累计开票金额
+	
+	private UFDouble ncumulativeinvoicemny;
+	
+	public static final String NCUMULATIVEINVOICEMNY = "ncumulativeinvoicemny";
+	
+	public UFDouble getNcumulativeinvoicemny() {
+		return ncumulativeinvoicemny;
+	}
+
+	public void setNcumulativeinvoicemny(UFDouble ncumulativeinvoicemny) {
+		this.ncumulativeinvoicemny = ncumulativeinvoicemny;
+	}
+	
+	//累计收款金额
+	
+	private UFDouble naccumulatedreceivemny;
+	
+	public static final String NACCUMULATEDRECEIVEMNY = "naccumulatedreceivemny";
+	
+	
+	public UFDouble getNaccumulatedreceivemny() {
+		return naccumulatedreceivemny;
+	}
+
+	public void setNaccumulatedreceivemny(UFDouble naccumulatedreceivemny) {
+		this.naccumulatedreceivemny = naccumulatedreceivemny;
+	}
+
+	//当期开票金额
+	private UFDouble ncurrentinvoicemny;
+	
+	public static final String NCURRENTINVOICEMNY = "ncurrentinvoicemny";	
+	
+	public UFDouble getNcurrentinvoicemny() {
+		return ncurrentinvoicemny;
+	}
+
+	public void setNcurrentinvoicemny(UFDouble ncurrentinvoicemny) {
+		this.ncurrentinvoicemny = ncurrentinvoicemny;
+	}
+
+	//当期收款金额
+	private UFDouble currentreceivemny;
+	
+	public static final String CURRENTRECEIVEMNY = "currentreceivemny";		
+	
+	public UFDouble getCurrentreceivemny() {
+		return currentreceivemny;
+	}
+
+	public void setCurrentreceivemny(UFDouble currentreceivemny) {
+		this.currentreceivemny = currentreceivemny;
+	}
+
+	//计算公式
+/*	1	  合同结算金额*合同约定付款比例-前期累计销项+未开票收入金额
+	2	  累计开票金额-前期累计销项+未开票收入金额
+	3	  累计收款金额-前期累计销项+未开票收入金额
+	4	  当期开票金额+未开票收入金额
+	5	  当期收款金额+未开票收入金额*/
+	private Integer calculationformula;
+	
+	public static final String CALCULATIONFORMULA = "calculationformula";
+	
+	public Integer getCalculationformula() {
+		return calculationformula;
+	}
+
+	public void setCalculationformula(Integer calculationformula) {
+		this.calculationformula = calculationformula;
+	}
+
+	//前期累计销项 
+	private UFDouble naccumulativemny;
+	
+	public static final String NACCUMULATIVEMNY = "naccumulativemny";
+	
+	public UFDouble getNaccumulativemny() {
+		return naccumulativemny;
+	}
+
+	public void setNaccumulativemny(UFDouble naccumulativemny) {
+		this.naccumulativemny = naccumulativemny;
+	}
+	
+	//未开票收入金额
+	private UFDouble nnotinvoiceincommny;
+
+	public static final String NNOTINVOICEINCOMMNY = "nnotinvoiceincommny";
+		
+	public UFDouble getNnotinvoiceincommny() {
+		return nnotinvoiceincommny;
+	}
+
+	public void setNnotinvoiceincommny(UFDouble nnotinvoiceincommny) {
+		this.nnotinvoiceincommny = nnotinvoiceincommny;
+	}
+
+	//linan 20171028 增加字段 end
+
 	// 新增字段
 	private UFDouble npaidtaxmny;// 应上缴税额
 	/**
