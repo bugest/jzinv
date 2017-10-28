@@ -61,7 +61,9 @@ import nc.vo.pub.CircularlyAccessibleValueObject;
 import nc.vo.pub.SuperVO;
 import nc.vo.pub.lang.UFBoolean;
 import nc.vo.pub.lang.UFDate;
+import nc.vo.pub.lang.UFDouble;
 import nc.vo.trade.pub.HYBillVO;
+import nc.vo.trade.pub.IBillStatus;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -615,6 +617,11 @@ public class AuthenEventHandler extends ManageEventHandler {
 				} else if (bisHaveAuthened(objs)) {
 					// 请选择没有认证过的数据
 					throw new BusinessException("请选择没有认证且没有传金税的数据");
+				} else {
+					//linan 20171028 如果是拆分的单据认证，需要判断所有单据都审批通过单据拆分金额是否满足税金之和=票面总税金，并且此时也不能有非审批通过态的单据存在
+					for (AggReceiveVO aggReceiveVO : objs) {
+						checkIssplitTaxOK(aggReceiveVO);
+					}
 				}
 			} else {
 				AggReceiveVO selectedData = (AggReceiveVO) getBillManageUI()
@@ -627,6 +634,10 @@ public class AuthenEventHandler extends ManageEventHandler {
 				if (bisHaveAuthened(objs)) {
 					// 请选择没有认证过的数据
 					throw new BusinessException("请选择没有认证且没有传金税的数据");
+				}
+				//linan 20171028 如果是拆分的单据认证，需要判断所有单据都审批通过单据拆分金额是否满足税金之和=票面总税金，并且此时也不能有非审批通过态的单据存在
+				else {
+					checkIssplitTaxOK(selectedData);
 				}
 			}
 			int result = dialog.showModal();
@@ -1079,4 +1090,54 @@ public class AuthenEventHandler extends ManageEventHandler {
 		}
 	}
 
+	/** 
+	* @Title: checkIssplitTaxOK 
+	* @Description: 判断与本单据属于同一发票的拆分单据是否审批通过并且所有拆分单据的税金之和=票面总税金
+	* @param     
+	* @return void    
+	* @throws 
+	*/
+	private void checkIssplitTaxOK(AggReceiveVO aggReceiveVO) throws BusinessException {
+		ReceiveVO receiveVO = (ReceiveVO) aggReceiveVO.getParentVO();
+		UFBoolean bissplit = receiveVO.getBissplit();
+		String pk_receive = receiveVO.getPk_receive();
+		String vinvno = receiveVO.getVinvno();
+		String vinvcode = receiveVO.getVinvcode();
+		String vbillno = receiveVO.getVbillno();
+		//本张单据的税金
+		UFDouble ntaxmny = receiveVO.getNtaxmny() == null ? UFDouble.ZERO_DBL : receiveVO.getNtaxmny();						
+		/*if (ntaxmny == null) {
+			throw new BusinessException("单据编号" + receiveVO.getVbillno() + "单据税额为空！");
+		}*/
+		//票面总税金
+		UFDouble ntotalinvoicetax = receiveVO.getNtotalinvoicetax();
+		//判断是否选中，选中则进行判断
+		if (bissplit != null && UFBoolean.TRUE.equals(bissplit)) {
+			//除了本张单据之外相同发票拆分的其他单据的税金之和
+			UFDouble othSumTax = UFDouble.ZERO_DBL;
+			//取到同一个发票拆分的所有单据，不包括自己
+			List<ReceiveVO> receiveVOList = NCLocator.getInstance()
+					.lookup(IReceiveService.class)
+					.querySplitHeadVOsByCond(vinvcode, vinvno, pk_receive);
+			if (receiveVOList != null && !receiveVOList.isEmpty()) {
+				for (ReceiveVO othReceiveVO : receiveVOList) {
+					if (IBillStatus.CHECKPASS != othReceiveVO.getVbillstatus()) {
+						//因为认证需要更新同一发票拆分的其他单据
+						throw new BusinessException("与单据编号为" + vbillno + "的单据属于同一发票的拆分单据 " 
+								+ othReceiveVO.getVbillno() + "没有审批通过，所以本单据不能认证！");
+					}
+					//累计其他单据的金额
+					othSumTax = othSumTax.add(othReceiveVO.getNtaxmny());
+				}
+			}
+			//判断总税额是否相等
+			//所有单据的税金合计
+			UFDouble sumTax = othSumTax.add(ntaxmny);
+			if (!sumTax.equals(ntotalinvoicetax)) {
+				throw new BusinessException("单据编号为" + vbillno + "的单据所属的发票的票面总税金不等于所有拆分单据税金之和，不能认证！");
+			}	
+		}		
+	}
+	
+	
 }
