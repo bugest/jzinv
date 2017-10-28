@@ -620,7 +620,7 @@ public class AuthenEventHandler extends ManageEventHandler {
 				} else {
 					//linan 20171028 如果是拆分的单据认证，需要判断所有单据都审批通过单据拆分金额是否满足税金之和=票面总税金，并且此时也不能有非审批通过态的单据存在
 					for (AggReceiveVO aggReceiveVO : objs) {
-						//checkIssplitTaxOK(aggReceiveVO);
+						checkIssplitTaxOK(aggReceiveVO);
 					}
 				}
 			} else {
@@ -637,7 +637,7 @@ public class AuthenEventHandler extends ManageEventHandler {
 				}
 				//linan 20171028 如果是拆分的单据认证，需要判断所有单据都审批通过单据拆分金额是否满足税金之和=票面总税金，并且此时也不能有非审批通过态的单据存在
 				else {
-					//checkIssplitTaxOK(selectedData);
+					checkIssplitTaxOK(selectedData);
 				}
 			}
 			int result = dialog.showModal();
@@ -731,9 +731,6 @@ public class AuthenEventHandler extends ManageEventHandler {
 			
 			
 		}
-		//linan add 如果是发票拆分的情况就同时更新同一发票下的拆分单据
-		
-		
 		CircularlyAccessibleValueObject[] vos =getBufferData().getAllHeadVOsFromBuffer();
 		if(vos.length>0){
 			for(int i=0;i<vos.length;i++){
@@ -754,12 +751,14 @@ public class AuthenEventHandler extends ManageEventHandler {
 		//updateSelectedVOs(hvos);
 		ReceiveVO[] hvosAll = new ReceiveVO[receiveList.size()]; 
 		updateSelectedVOs(receiveList.toArray(hvosAll));
-		updateBatchSelectRows(hvos);
+		updateBatchSelectRows(receiveList.toArray(hvosAll));
 	}
 
 	private void unAuthenSelectedVOs(Object[] objs, int button)
 			throws Exception {
 		ReceiveVO[] hvos = new ReceiveVO[objs.length];
+		//linan add 记录同一发票下的其他拆分单据
+		List<ReceiveVO> receiveList = new ArrayList<ReceiveVO>(); 
 		for (int i = 0; i < objs.length; i++) {
 			ReceiveVO hvo = (ReceiveVO) ((HYBillVO) objs[i]).getParentVO();
 			hvo.setAttributeValue(ReceiveVO.PK_AUTHENPSN, null);
@@ -768,6 +767,30 @@ public class AuthenEventHandler extends ManageEventHandler {
 			hvo.setAttributeValue(ReceiveVO.BISAUTHEN, UFBoolean.FALSE);
 			hvo.setAttributeValue(ReceiveVO.IAUTHSTATUS, InvConsts.AUTHSTATUS_NOAUTH);
 			hvos[i] = hvo;
+			//把vo都放进list里
+			receiveList.add(hvo);
+			//linan add 如果是发票拆分的情况就同时更新同一发票下的拆分单据
+			UFBoolean bissplit = hvo.getBissplit();
+			String pk_receive = hvo.getPk_receive();
+			String vinvno = hvo.getVinvno();
+			String vinvcode = hvo.getVinvcode();
+			if (UFBoolean.TRUE.equals(bissplit)) {
+				//找到拆分的其他单据
+				List<ReceiveVO> receiveVOList = NCLocator.getInstance()
+						.lookup(IReceiveService.class)
+						.querySplitHeadVOsByCond(vinvcode, vinvno, pk_receive);
+				if (receiveVOList != null && !receiveVOList.isEmpty()) {
+					for (ReceiveVO receiveVO : receiveVOList) {
+						receiveVO.setAttributeValue(ReceiveVO.PK_AUTHENPSN, null);
+						receiveVO.setAttributeValue(ReceiveVO.DAUTHENDATE, null);
+						receiveVO.setAttributeValue(ReceiveVO.VTAXPERIOD, null);
+						receiveVO.setAttributeValue(ReceiveVO.BISAUTHEN, UFBoolean.FALSE);
+						receiveVO.setAttributeValue(ReceiveVO.IAUTHSTATUS, InvConsts.AUTHSTATUS_NOAUTH);
+					}
+					receiveList.addAll(receiveVOList);
+				}
+				
+			}
 		}
 		CircularlyAccessibleValueObject[] vos =getBufferData().getAllHeadVOsFromBuffer();
 		if(vos.length>0){
@@ -785,8 +808,12 @@ public class AuthenEventHandler extends ManageEventHandler {
 				}
 			}
 		}
-		updateSelectedVOs(hvos);
-		updateBatchSelectRows(hvos);
+		//updateSelectedVOs(hvos);
+		//linan注释 改为从list里边读取
+		//updateSelectedVOs(hvos);
+		ReceiveVO[] hvosAll = new ReceiveVO[receiveList.size()]; 
+		updateSelectedVOs(receiveList.toArray(hvosAll));
+		updateBatchSelectRows(receiveList.toArray(hvosAll));
 	}
 	/**
 	 * 批量处理所选数据
