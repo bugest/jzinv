@@ -44,7 +44,6 @@ import nc.ui.pub.bill.BillModel;
 import nc.ui.trade.base.IBillOperate;
 import nc.ui.trade.controller.IControllerBase;
 import nc.ui.trade.manage.BillManageUI;
-import nc.vo.jzinv.inv0305.BlankInvoiceVO;
 import nc.vo.jzinv.inv1025.InvExcelImportVO;
 import nc.vo.jzinv.invpub.InvConsts;
 import nc.vo.jzinv.param.InvParamTool;
