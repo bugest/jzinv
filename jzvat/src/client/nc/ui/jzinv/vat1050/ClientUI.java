@@ -249,6 +249,12 @@ public class ClientUI extends BillManageUI implements
 			             VatProjanalyVO.NINTOOUTMNY, 
 			             VatProjanalyVO.NTAXABLEMNY, VatProjanalyVO.NRESTTAXMNY
 			             ,VatProjanalyVO.NTHAUTHNOCUTMNY,VatProjanalyVO.NLAUTHTHCUTMNY
-			             ,VatProjanalyVO.NPREPAYTAXMNY,VatProjanalyVO.NPAIDTAXMNY}; 
+			             ,VatProjanalyVO.NPREPAYTAXMNY,VatProjanalyVO.NPAIDTAXMNY, 
+			             //linan add 为计算当期应税销售额 增加的字段
+			             VatProjanalyVO.NCONTRACTSETTLEMNY, VatProjanalyVO.NCUMULATIVEINVOICEMNY
+			             , VatProjanalyVO.NACCUMULATEDRECEIVEMNY, 
+			             VatProjanalyVO.NCURRENTINVOICEMNY, VatProjanalyVO.CURRENTRECEIVEMNY,
+			             VatProjanalyVO.NACCUMULATIVEMNY, VatProjanalyVO.NNOTINVOICEINCOMMNY		             
+	}; 
 	} 
 }
