@@ -3,8 +3,10 @@ package nc.itf.jzinv.vat1050;
 import java.util.List;
 import java.util.Map;
 
+import nc.vo.jzinv.inv0510.OpenHVO;
 import nc.vo.jzinv.vat0505.VatTaxorgsetVO;
 import nc.vo.jzinv.vat0510.VatProjtaxsetVO;
+import nc.vo.jzpm.in2005.InIncomeVO;
 import nc.vo.pub.BusinessException;
 import nc.vo.pub.SuperVO;
 import nc.vo.pub.lang.UFBoolean;
@@ -205,4 +207,29 @@ public interface IVatProjanalyService {
 	 * @throws BusinessException
 	 */
 	public UFDouble getNprepaytaxmny( String pk_project,String vperiod,String pk_corp,UFBoolean bisbegin) throws BusinessException;
+	
+	/** 
+	* @Title: queryInIncomeHeadVOsByCond 
+	* @Description: 根据条件查询收款申请单信息 
+	* @param @param pk_project
+	* @param @param vperiod
+	* @param @param pk_corp
+	* @param @return
+	* @param @throws BusinessException    
+	* @return List<InIncomeVO>    
+	* @throws 
+	*/
+	public List<InIncomeVO> queryInIncomeHeadVOsByCond(String pk_project, String pk_corp) throws BusinessException;
+	
+	/** 
+	* @Title: queryOpenHVOsByCond 
+	* @Description: 查询开票信息 
+	* @param @param pk_project
+	* @param @param pk_corp
+	* @param @return
+	* @param @throws BusinessException    
+	* @return List<OpenHVO>    
+	* @throws 
+	*/
+	public List<OpenHVO> queryOpenHVOsByCond(String pk_project, String pk_corp) throws BusinessException;
 }

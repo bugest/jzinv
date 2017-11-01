@@ -3,6 +3,7 @@ package nc.impl.jzinv.vat1050;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +14,9 @@ import nc.bs.dao.BaseDAO;
 import nc.bs.dao.DAOException;
 import nc.bs.framework.common.InvocationInfoProxy;
 import nc.itf.jzinv.vat1050.IVatProjanalyService;
+import nc.jdbc.framework.processor.BeanListProcessor;
 import nc.jdbc.framework.processor.ResultSetProcessor;
+import nc.vo.jzinv.inv0510.OpenHVO;
 import nc.vo.jzinv.pub.IJzinvBillType;
 import nc.vo.jzinv.pub.tool.InSqlManager;
 import nc.vo.jzinv.pub.utils.SafeCompute;
@@ -23,6 +26,7 @@ import nc.vo.jzinv.vat1045.VatIncretaxpreVO;
 import nc.vo.jzinv.vat1050.VatProjanalyBVO;
 import nc.vo.jzinv.vat1050.VatProjanalyVO;
 import nc.vo.jzinv.vatpub.VatPubMetaNameConsts;
+import nc.vo.jzpm.in2005.InIncomeVO;
 import nc.vo.pub.BusinessException;
 import nc.vo.pub.SuperVO;
 import nc.vo.pub.lang.UFBoolean;
@@ -1157,5 +1161,38 @@ public class VatProjanalyServiceImpl implements IVatProjanalyService{
 		} catch (DAOException e) {
 			throw new BusinessException(e);
 		}
+	}
+	/* (non-Javadoc)
+	 * @see nc.itf.jzinv.vat1050.IVatProjanalyService#queryInIncomeHeadVOsByCond(java.lang.String, java.lang.String, java.lang.String)
+	 */
+	public List<InIncomeVO> queryInIncomeHeadVOsByCond(String pk_project, String pk_corp) throws BusinessException {
+		StringBuffer sqlStr = new StringBuffer();
+		sqlStr.append(" select * from jzpm_in_income r ");
+		sqlStr.append(" where pk_project = '" + pk_project + "'");
+		sqlStr.append(" and pk_corp = '" + pk_corp + "'");
+		sqlStr.append(" and dr = 0 ");
+		List<InIncomeVO> result = (List<InIncomeVO>) new BaseDAO().executeQuery(sqlStr.toString(),
+				new BeanListProcessor(InIncomeVO.class));
+		InIncomeVO[] vos = result.toArray(new InIncomeVO[0]);
+		List<InIncomeVO> voList = new ArrayList<InIncomeVO>();
+		voList.addAll(Arrays.asList(vos));
+		return voList;
+	}
+	
+	/* (non-Javadoc)
+	 * @see nc.itf.jzinv.vat1050.IVatProjanalyService#queryOpenHVOsByCond(java.lang.String, java.lang.String)
+	 */
+	public List<OpenHVO> queryOpenHVOsByCond(String pk_project, String pk_corp) throws BusinessException {
+		StringBuffer sqlStr = new StringBuffer();
+		sqlStr.append(" select * from jzinv_open r ");
+		sqlStr.append(" where pk_project = '" + pk_project + "'");
+		sqlStr.append(" and pk_corp = '" + pk_corp + "'");
+		sqlStr.append(" and dr = 0 ");
+		List<OpenHVO> result = (List<OpenHVO>) new BaseDAO().executeQuery(sqlStr.toString(),
+				new BeanListProcessor(OpenHVO.class));
+		OpenHVO[] vos = result.toArray(new OpenHVO[0]);
+		List<OpenHVO> voList = new ArrayList<OpenHVO>();
+		voList.addAll(Arrays.asList(vos));
+		return voList;
 	}
 }

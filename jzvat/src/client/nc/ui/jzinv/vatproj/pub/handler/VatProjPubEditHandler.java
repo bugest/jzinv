@@ -4,10 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import nc.bs.framework.common.NCLocator;
+import nc.bs.logging.Logger;
+import nc.itf.jzinv.vat1050.IVatProjanalyService;
 import nc.ui.jzinv.vat1050.tool.VatProjMnyTool;
 import nc.ui.jzinv.vatpub.handler.VatCardEditHandler;
 import nc.ui.pub.bill.BillEditEvent;
 import nc.ui.trade.manage.BillManageUI;
+import nc.vo.jzinv.inv0510.OpenHVO;
 import nc.vo.jzinv.vat0505.VatTaxorgsetVO;
 import nc.vo.jzinv.vat0510.VatProjtaxsetVO;
 import nc.vo.jzinv.vat1045.VatIncretaxLevyVO;
@@ -15,11 +19,13 @@ import nc.vo.jzinv.vat1050.VatProjanalyBVO;
 import nc.vo.jzinv.vat1050.VatProjanalyVO;
 import nc.vo.jzinv.vatpub.VatPubMetaNameConsts;
 import nc.vo.jzinv.vatpub.VatPubProxy;
+import nc.vo.jzpm.in2005.InIncomeVO;
 import nc.vo.pub.BusinessException;
 import nc.vo.pub.SuperVO;
 import nc.vo.pub.lang.UFBoolean;
 import nc.vo.pub.lang.UFDateTime;
 import nc.vo.pub.lang.UFDouble;
+import nc.vo.trade.pub.IBillStatus;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -306,5 +312,118 @@ public class VatProjPubEditHandler extends VatCardEditHandler{
 	 */
 	public String getTablecode(){
 		return VatProjanalyBVO.TABCODE;
+	}
+	
+	/** 
+	* @Title: setNtaxablesalemnyByWhoHigher 
+	* @Description: 项目或区间改变时根据孰高原则设置应税销售额和一些默认值
+	* @param     
+	* @return void    
+	* @throws 
+	*/
+	public void setNtaxablesalemnyByProjectOrPeriodChange() {
+		String pk_project = (String) getClientUI().getBillCardPanel().
+			getHeadItem(VatProjanalyVO.PK_PROJECT).getValueObject();
+		String vperiod = (String) getClientUI().getBillCardPanel().
+				getHeadItem(VatProjanalyVO.VPERIOD).getValueObject();
+		String pk_corp = getClientUI()._getCorp().pk_corp;
+		//如果项目或者区间的信息改变成空的话就把相关信息都清空
+		if (pk_project == null || pk_project.trim().equals("") 
+				|| vperiod == null || vperiod.trim().equals("")) {
+			//合同结算金额
+			getClientUI().getBillCardPanel().
+				getHeadItem(VatProjanalyVO.NCONTRACTSETTLEMNY).setValue(null);
+			//累计开票金额
+			getClientUI().getBillCardPanel().
+				getHeadItem(VatProjanalyVO.NCUMULATIVEINVOICEMNY).setValue(null);
+			//累计收款金额
+			getClientUI().getBillCardPanel().
+				getHeadItem(VatProjanalyVO.NACCUMULATEDRECEIVEMNY).setValue(null);
+			//当期收款金额
+			getClientUI().getBillCardPanel().
+				getHeadItem(VatProjanalyVO.CURRENTRECEIVEMNY).setValue(null);
+			//前期累计销项
+			getClientUI().getBillCardPanel().
+				getHeadItem(VatProjanalyVO.NACCUMULATIVEMNY).setValue(null);
+		} else {
+			//目前所有的查找先不判断区间的问题，只用审批过的单子就ok ！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！，以后有需求再加
+			//当项目和期间都有时则先计算一些根据项目管理出来的值
+			//1.“合同结算金额”： 取【收款申请单】（本期结算金额汇总，用项目去关联）
+			getClientUI().getBillCardPanel().getHeadItem(VatProjanalyVO.NCONTRACTSETTLEMNY)
+				.setValue(getNcontractsettlemny(pk_project, pk_corp));
+			//2“ 累计开票金额”： 取项目累计开票金额（开票or开票无合同发票金额总和，用项目去关联）
+			getClientUI().getBillCardPanel().getHeadItem(VatProjanalyVO.NCUMULATIVEINVOICEMNY)
+				.setValue(getNcumulativeinvoicemny(pk_project, pk_corp));
+			//3 “ 累计收款金额”： 取【收款单】收款明细子表“本次收款金额”历史数据汇总（sum（本次收款金额） 项目关联，要求审批通过的，月份＜=当期最晚日期）
+			
+			//4“当期收款金额”： 取【收款单】收款明细子表“本次收款金额”的汇总（取本期间所有的汇总，sum（本次收款金额） 项目关联，要求审批通过的）
+
+			//5“前期累计销项”：应税销售额的历史数据累计（取本单据 sum(应税销售额),审批通过，同项目）
+		}
+		//ncumulativeinvoicemny
+		
+	/*	getClientUI().getBillCardPanel().
+				getHeadItem(VatProjanalyVO.).getValueObject()；*/
+	}
+	
+	/** 
+	* @Title: setNcontractsettlemny 
+	* @Description: 设置合同结算金额 ,目前不考虑区间
+	* @param     
+	* @return void    
+	* @throws 
+	*/
+	@SuppressWarnings("unused")
+	private UFDouble getNcontractsettlemny(String pk_project, String pk_corp) {
+		UFDouble ncontractsettlemny = UFDouble.ZERO_DBL;
+		//找收款申请单 ----本期结算金额汇总，用项目去关联
+		try {
+			List<InIncomeVO> inIncomeVOVOList = NCLocator.getInstance().lookup(IVatProjanalyService.class)
+				.queryInIncomeHeadVOsByCond(pk_project, pk_corp);
+			if (inIncomeVOVOList != null && !inIncomeVOVOList.isEmpty()) {
+				for (InIncomeVO inIncomeVO : inIncomeVOVOList) {
+					//只统计审批通过的
+					if (IBillStatus.CHECKPASS == inIncomeVO.getVbillstatus()) {
+						ncontractsettlemny = ncontractsettlemny.add(inIncomeVO.getNreporigintaxmny() == null ?
+								UFDouble.ZERO_DBL : inIncomeVO.getNreporigintaxmny());
+					}
+				}
+			}
+		} catch (BusinessException e) {
+			Logger.error("查询收款申请单信息错误！", e);
+			getClientUI().showErrorMessage("查询收款申请单信息错误!");
+		}
+		return ncontractsettlemny;
+	}
+	
+	/** 
+	* @Title: getNcumulativeinvoicemny 
+	* @Description: 计算 累计开票金额
+	* @param @param pk_project
+	* @param @param pk_corp
+	* @param @return    
+	* @return UFDouble    
+	* @throws 
+	*/
+	private UFDouble getNcumulativeinvoicemny(String pk_project, String pk_corp) {
+		UFDouble ncumulativeinvoicemny = UFDouble.ZERO_DBL;
+		//找收款申请单 ----本期结算金额汇总，用项目去关联
+		try {
+			List<OpenHVO> openHVOList = NCLocator.getInstance().lookup(IVatProjanalyService.class)
+				.queryOpenHVOsByCond(pk_project, pk_corp);
+			if (openHVOList != null && !openHVOList.isEmpty()) {
+				for (OpenHVO openHVO : openHVOList) {
+					//只统计审批通过的
+					if (IBillStatus.CHECKPASS == openHVO.getVbillstatus()) {
+						ncumulativeinvoicemny = ncumulativeinvoicemny.add(openHVO.getNthopentaxmny() == null ?
+								UFDouble.ZERO_DBL : openHVO.getNthopentaxmny());
+					}
+				}
+			}
+		} catch (BusinessException e) {
+			Logger.error("查询收款申请单信息错误！", e);
+			getClientUI().showErrorMessage("查询收款申请单信息错误!");
+		}
+		return ncumulativeinvoicemny;		
 	}
 }

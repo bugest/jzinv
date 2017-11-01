@@ -48,8 +48,9 @@ public class ProjectEditHandler extends VatProjPubEditHandler{
 	    	}
 			try {
 				setHeadItem(getProjsetVO(), getOrgsetVO());
-				checkData(pk_project, vperiod, e);
-				
+				//linan addd
+				setNtaxablesalemnyByProjectOrPeriodChange();
+				checkData(pk_project, vperiod, e);			
 
 			} catch (Exception e1) {
 				e1.printStackTrace();
