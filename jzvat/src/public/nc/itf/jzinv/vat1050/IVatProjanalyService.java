@@ -6,7 +6,9 @@ import java.util.Map;
 import nc.vo.jzinv.inv0510.OpenHVO;
 import nc.vo.jzinv.vat0505.VatTaxorgsetVO;
 import nc.vo.jzinv.vat0510.VatProjtaxsetVO;
+import nc.vo.jzinv.vat1050.VatProjanalyVO;
 import nc.vo.jzpm.in2005.InIncomeVO;
+import nc.vo.jzpm.in2010.InRecdetailVO;
 import nc.vo.pub.BusinessException;
 import nc.vo.pub.SuperVO;
 import nc.vo.pub.lang.UFBoolean;
@@ -232,4 +234,31 @@ public interface IVatProjanalyService {
 	* @throws 
 	*/
 	public List<OpenHVO> queryOpenHVOsByCond(String pk_project, String pk_corp) throws BusinessException;
+	
+	/** 
+	* @Title: queryInRecdetailVOByCond 
+	* @Description: 根据查询条件查询收款明细
+	* @param @param pk_project 
+	* @param @param pk_corp
+	* @param @param vbillstatus 如果不填默认选全部
+	* @param @param vperiod 如果不填默认选全部
+	* @param @return
+	* @param @throws BusinessException    
+	* @return List<InRecdetailVO>    
+	* @throws 
+	*/
+	public List<InRecdetailVO> queryInRecdetailVOByCond(String pk_project, String pk_corp,
+			Integer vbillstatus, String vperiod) throws BusinessException; 
+	
+	/** 
+	* @Title: queryVatProjanalyVOsByCond 
+	* @Description: 查询项目税金计算单据 
+	* @param @param pk_project
+	* @param @param pk_corp
+	* @param @return
+	* @param @throws BusinessException    
+	* @return List<VatProjanalyVO>    
+	* @throws 
+	*/
+	public List<VatProjanalyVO> queryVatProjanalyVOsByCond(String pk_project, String pk_corp) throws BusinessException;
 }

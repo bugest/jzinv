@@ -13,6 +13,7 @@ import java.util.Map.Entry;
 import nc.bs.dao.BaseDAO;
 import nc.bs.dao.DAOException;
 import nc.bs.framework.common.InvocationInfoProxy;
+import nc.bs.logging.Logger;
 import nc.itf.jzinv.vat1050.IVatProjanalyService;
 import nc.jdbc.framework.processor.BeanListProcessor;
 import nc.jdbc.framework.processor.ResultSetProcessor;
@@ -27,6 +28,7 @@ import nc.vo.jzinv.vat1050.VatProjanalyBVO;
 import nc.vo.jzinv.vat1050.VatProjanalyVO;
 import nc.vo.jzinv.vatpub.VatPubMetaNameConsts;
 import nc.vo.jzpm.in2005.InIncomeVO;
+import nc.vo.jzpm.in2010.InRecdetailVO;
 import nc.vo.pub.BusinessException;
 import nc.vo.pub.SuperVO;
 import nc.vo.pub.lang.UFBoolean;
@@ -1195,4 +1197,75 @@ public class VatProjanalyServiceImpl implements IVatProjanalyService{
 		voList.addAll(Arrays.asList(vos));
 		return voList;
 	}
+	
+	
+	/* (non-Javadoc)
+	 * @see nc.itf.jzinv.vat1050.IVatProjanalyService#queryInRecdetailVOByCond(java.lang.String, java.lang.String, java.lang.Integer, java.lang.String)
+	 */
+	public List<InRecdetailVO> queryInRecdetailVOByCond(String pk_project, String pk_corp,
+			Integer vbillstatus, String vperiod) throws BusinessException {
+		StringBuffer sqlStr = new StringBuffer();
+		sqlStr.append(" select ind.* from jzpm_in_recdetail ind ");
+		sqlStr.append(" join jzpm_in_receive inr on ind.pk_receive = inr.pk_receive ");
+		sqlStr.append(" where ind.dr = 0 and inr.dr= 0 ");
+		sqlStr.append(" and inr.pk_corp = '" + pk_corp + " ' and inr.pk_project = '" + pk_project + "' ");
+		if (vbillstatus != null) {
+			sqlStr.append(" and inr.vbillstatus = " + vbillstatus);
+		}
+		//处理区间，有区间就在这个范围内选单据
+		if (vperiod != null && vperiod.trim().equals("")) {
+			//判断区间是不是合法
+			String[] yearAndMonth = vperiod.split("-");
+			if (yearAndMonth == null || yearAndMonth.length != 2) {
+				Logger.error("期间" + vperiod + "不合法！");
+				throw new BusinessException("期间" + vperiod + "不合法！");
+			}
+			//根据日月计算出时间
+			Integer year = new Integer(yearAndMonth[0]);
+			Integer month = new Integer(yearAndMonth[1]);
+			String beginDate = vperiod + "-01";
+			String endDate = null;
+			if(month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12) {
+				endDate = vperiod + "-31";
+			} else if (month == 4 || month == 6 || month == 9 || month == 11){
+				endDate = vperiod + "-30";
+			} else if (month == 2) {
+				if ((year % 4 == 0 && year % 100 !=0) || year % 400 == 0) {
+					endDate = vperiod + "-29";
+				} else {
+					endDate = vperiod + "-28";
+				}
+			} else {
+				Logger.error("期间" + vperiod + "不合法！");
+				throw new BusinessException("期间" + vperiod + "不合法！");
+			}
+			//时间正确就增加条件
+			sqlStr.append(" and to_date(inr.DBILLDATE,'yyyy-mm-dd') >= to_date('" + beginDate + "','yyyy-mm-dd') ");
+			sqlStr.append(" and to_date(inr.DBILLDATE,'yyyy-mm-dd') <= to_date('" + endDate + "','yyyy-mm-dd') ");
+		}	
+		List<InRecdetailVO> result = (List<InRecdetailVO>) new BaseDAO().executeQuery(sqlStr.toString(),
+				new BeanListProcessor(InRecdetailVO.class));
+		InRecdetailVO[] vos = result.toArray(new InRecdetailVO[0]);
+		List<InRecdetailVO> voList = new ArrayList<InRecdetailVO>();
+		voList.addAll(Arrays.asList(vos));
+		return voList;			
+	}
+	
+	/* (non-Javadoc)
+	 * @see nc.itf.jzinv.vat1050.IVatProjanalyService#queryVatProjanalyVOsByCond(java.lang.String, java.lang.String)
+	 */
+	public List<VatProjanalyVO> queryVatProjanalyVOsByCond(String pk_project, String pk_corp) throws BusinessException {
+		StringBuffer sqlStr = new StringBuffer();
+		sqlStr.append(" select * from jzinv_vat_projanaly r ");
+		sqlStr.append(" where pk_project = '" + pk_project + "'");
+		sqlStr.append(" and pk_corp = '" + pk_corp + "'");
+		sqlStr.append(" and dr = 0 ");
+		List<VatProjanalyVO> result = (List<VatProjanalyVO>) new BaseDAO().executeQuery(sqlStr.toString(),
+				new BeanListProcessor(VatProjanalyVO.class));
+		VatProjanalyVO[] vos = result.toArray(new VatProjanalyVO[0]);
+		List<VatProjanalyVO> voList = new ArrayList<VatProjanalyVO>();
+		voList.addAll(Arrays.asList(vos));
+		return voList;
+	}	
+	
 }
